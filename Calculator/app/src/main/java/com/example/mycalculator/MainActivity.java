@@ -1,5 +1,6 @@
 package com.example.mycalculator;
 import android.os.Bundle;
+import android.system.ErrnoException;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -154,7 +155,14 @@ public class MainActivity extends AppCompatActivity  {
                 double x = parseFactor();
                 for (;;) {
                     if      (eat('X')) x *= parseFactor(); // multiplication
-                    else if (eat('÷')) x /= parseFactor(); // division
+                    else if (eat('÷'))  // division
+                    {
+                        double denominator = parseFactor();
+                        if(denominator==0)
+                            throw new ArithmeticException();
+                        else
+                            x /= denominator;
+                    }
                     else return x;
                 }
             }
@@ -177,7 +185,7 @@ public class MainActivity extends AppCompatActivity  {
                 }
                 else
                 {
-                    throw new RuntimeException("Unexpected: " + (char)ch);
+                    throw new RuntimeException();
                 } 
 
                 return x;

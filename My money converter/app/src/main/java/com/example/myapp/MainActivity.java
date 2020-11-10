@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     HashMap<String, Double> exchangeRate;
     DecimalFormat df;
     RequestQueue requestQueue;
+    TextView result;
 
 
     public void convert(View view) throws InterruptedException {
@@ -48,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
         String currencyTo = spinnerTo.getSelectedItem().toString();
         double rate = exchangeRate.get(currencyTo) / exchangeRate.get(currencyFrom);
         double amount = Double.parseDouble(amountEditText.getText().toString());
-        amount = Double.parseDouble(df.format(amount * rate));
-        Toast.makeText(this, String.valueOf(amount), Toast.LENGTH_SHORT).show();
+        result.setText(df.format(amount * rate));
+
     }
 
     public void buildExchangeRate()
@@ -88,21 +90,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        amountEditText = findViewById(R.id.inputEditText);
-
+        this.amountEditText = findViewById(R.id.inputEditText);
+        this.result = findViewById(R.id.resultTextView);
         //set the options in the spinner views
         ArrayAdapter<CharSequence> currencyAdapter = ArrayAdapter.createFromResource(this,
                 R.array.currency, android.R.layout.simple_spinner_item);
         currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerFrom = findViewById(R.id.spinnerFrom);
-        spinnerTo = findViewById(R.id.spinnerTo);
-        spinnerFrom.setAdapter(currencyAdapter);
-        spinnerTo.setAdapter(currencyAdapter);
+        this.spinnerFrom = findViewById(R.id.spinnerFrom);
+        this.spinnerTo = findViewById(R.id.spinnerTo);
+        this.spinnerFrom.setAdapter(currencyAdapter);
+        this.spinnerTo.setAdapter(currencyAdapter);
 
-        requestQueue = Volley.newRequestQueue(this);
+        this.requestQueue = Volley.newRequestQueue(this);
         buildExchangeRate();
 
         //building format to output
-        df = new DecimalFormat("##.#####");
+        this.df = new DecimalFormat("##.#####");
     }
 }

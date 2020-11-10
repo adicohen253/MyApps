@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Guess My Number</string>
+    <string name="select_level">Select level to play:</string>
+    <string name="play">Start play!</string>
+    <string name="range">Range:</string>
+    <string name="guesses">Guesses:</string>
+    <string name="description">I am thinking of a number between 1 and</string>
+    <string name="guess_hint">Guess my number!</string>
+    <string name="guess">Guess</string>
+    <string-array name="levels">
+        <item>Easy</item>
+        <item>Normal</item>
+        <item>Hard</item>
+        <item>Insane</item>
+        <item>Impossible</item>
+    </string-array>
+</resources>

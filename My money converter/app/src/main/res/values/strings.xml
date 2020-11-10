@@ -2,6 +2,8 @@
     <string name="app_name">My currency converter</string>
     <string name="amount">Enter amount</string>
     <string name="convert">Convert</string>
+    <string name="from">From:</string>
+    <string name="to">To:</string>
     <string-array name="currency">
         <item>Dollar-$</item>
         <item>Euro-€</item>
