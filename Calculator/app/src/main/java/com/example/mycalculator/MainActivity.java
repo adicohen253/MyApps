@@ -1,94 +1,38 @@
 package com.example.mycalculator;
 import android.os.Bundle;
-import android.system.ErrnoException;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 public class MainActivity extends AppCompatActivity  {
+    TextView screen;
+    ScriptEngine engine;
 
     public void buttonPressed(View view)
     {
-        TextView screen = findViewById(R.id.Screen);
         int id = view.getId();
         switch (id)
         {
-            case R.id.b0:
-                screen.append("0");
-                break;
-            case R.id.b1:
-                screen.append("1");
-                break;
-            case R.id.b2:
-                screen.append("2");
-                break;
-            case R.id.b3:
-                screen.append("3");
-                break;
-            case R.id.b4:
-                screen.append("4");
-                break;
-
-            case R.id.b5:
-                screen.append("5");
-                break;
-
-            case R.id.b6:
-                screen.append("6");
-                break;
-
-            case R.id.b7:
-                screen.append("7");
-                break;
-
-            case R.id.b8:
-                screen.append("8");
-                break;
-
-            case R.id.b9:
-                screen.append("9");
-                break;
-
-            case R.id.LeftBracket:
-                screen.append("(");
-                break;
-
-            case R.id.RightBracket:
-                screen.append(")");
-                break;
-
-            case R.id.Dot:
-                screen.append(".");
-                break;
-
-            case R.id.Mul:
-                screen.append("X");
-                break;
-
-            case R.id.Div:
-                screen.append("÷");
-                break;
-
-            case R.id.Add:
-                screen.append("+");
-                break;
-
-            case R.id.Sub:
-                screen.append("-");
-                break;
-
             case R.id.Equals:
                 try
                 {
-                    double x = eval(screen.getText().toString());
+                    String expression = screen.getText().toString().replace('X', '*').replace('÷', '/');
+                    double x = (double) engine.eval(expression);
+                    if(Double.isInfinite(x))
+                    {
+                        throw new ArithmeticException();
+                    }
                     if(x%1==0)
                         screen.setText(String.valueOf((int)x));
                     else
                         screen.setText(String.valueOf(x));
                 }
-                catch (Exception e) {
-                    screen.setText("");
-                    opendialog();
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    openDialog();
                 }
                 break;
 
@@ -102,95 +46,29 @@ public class MainActivity extends AppCompatActivity  {
             case R.id.Clear:
                 screen.setText("");
                 break;
+
+            default:
+                screen.append(view.getTag().toString());
+                break;
         }
+
+
+    }
+
+    public void openDialog()
+    {
+        ErrorDialog dialog = new ErrorDialog();
+        dialog.show(getSupportFragmentManager(), "OK");
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
-
-    public void opendialog()
-    {
-        ErrorDialog dialog = new ErrorDialog();
-        dialog.show(getSupportFragmentManager(), "OK");
-    }
-
-    public static double eval(final String str)
-    {
-        return new Object() {
-            int pos = -1, ch;
-
-            void nextChar() {
-                ch = (++pos < str.length()) ? str.charAt(pos) : -1;
-            }
-
-            boolean eat(int charToEat) {
-                while (ch == ' ') nextChar();
-                if (ch == charToEat) {
-                    nextChar();
-                    return true;
-                }
-                return false;
-            }
-
-            double parse() {
-                nextChar();
-                double x = parseExpression();
-                if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
-                return x;
-            }
-
-            double parseExpression() {
-                double x = parseTerm();
-                for (;;) {
-                    if      (eat('+')) x += parseTerm(); // addition
-                    else if (eat('-')) x -= parseTerm(); // subtraction
-                    else return x;
-                }
-            }
-
-            double parseTerm() {
-                double x = parseFactor();
-                for (;;) {
-                    if      (eat('X')) x *= parseFactor(); // multiplication
-                    else if (eat('÷'))  // division
-                    {
-                        double denominator = parseFactor();
-                        if(denominator==0)
-                            throw new ArithmeticException();
-                        else
-                            x /= denominator;
-                    }
-                    else return x;
-                }
-            }
-
-            double parseFactor() {
-                if (eat('+')) return parseFactor(); // unary plus
-                if (eat('-')) return -parseFactor(); // unary minus
-
-                double x;
-                int startPos = this.pos;
-                if (eat('('))
-                {
-                    x = parseExpression();
-                    eat(')');
-                }
-                else if ((ch >= '0' && ch <= '9') || ch == '.')
-                {
-                    while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
-                    x = Double.parseDouble(str.substring(startPos, this.pos));
-                }
-                else
-                {
-                    throw new RuntimeException();
-                } 
-
-                return x;
-            }
-        }.parse();
+        screen = findViewById(R.id.Screen);
+        engine = new ScriptEngineManager().getEngineByName("rhino");
 
     }
+
+
 }

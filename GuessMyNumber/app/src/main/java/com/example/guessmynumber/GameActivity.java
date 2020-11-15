@@ -35,7 +35,10 @@ public class GameActivity extends AppCompatActivity {
         else
         {
             int userGuess = Integer.parseInt(input);
-            if(userGuess < this.mySecretNumber)
+
+            if(userGuess == 0)
+                Toast.makeText(this, "Number not in the range Try again", Toast.LENGTH_SHORT).show();
+            else if(userGuess < this.mySecretNumber)
             {
                 this.guesses--;
                 if(this.guesses == 0)
