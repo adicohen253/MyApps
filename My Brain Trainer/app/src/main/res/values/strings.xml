@@ -2,4 +2,7 @@
     <string name="app_name">My Brain Trainer</string>
     <string name="start">Start!</string>
     <string name="starting_score">0/0</string>
+    <string name="correct">Correct!</string>
+    <string name="wrong">Wrong!</string>
+    <string name="play_again">Play again!</string>
 </resources>
