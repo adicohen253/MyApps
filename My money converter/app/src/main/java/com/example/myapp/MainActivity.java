@@ -1,9 +1,7 @@
 package com.example.myapp;
 
-
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.VoiceInteractor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,17 +10,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     EditText amountEditText;
     HashMap<String, Double> exchangeRate;
     DecimalFormat df;
-    RequestQueue requestQueue;
     TextView result;
 
 
@@ -54,34 +46,44 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void buildExchangeRate()
-    {
-        exchangeRate = new HashMap<>();
+    public void buildExchangeRate(JSONObject jsonObject) {
+        try {
+            jsonObject = jsonObject.getJSONObject("rates");
+            exchangeRate.put("Dollar-$", 1.0);
+            exchangeRate.put("Euro-€", jsonObject.getDouble("EUR"));
+            exchangeRate.put("Pound-₤", jsonObject.getDouble("GBP"));
+            exchangeRate.put("Shekel-₪", jsonObject.getDouble("ILS"));
+            exchangeRate.put("Yen-¥", jsonObject.getDouble("JPY"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
-        Response.Listener<JSONObject> response = response1 -> {
+
+    private static class Downloader extends AsyncTask<String, Void, JSONObject>
+    {
+        @Override
+        protected JSONObject doInBackground(String... urls) {
+            StringBuilder data = new StringBuilder();
+            HttpURLConnection urlConnection;
             try
             {
-                JSONObject currency = response1.getJSONObject("rates");
-                exchangeRate.put("Dollar-$", 1.0);
-                exchangeRate.put("Euro-€", currency.getDouble("EUR"));
-                exchangeRate.put("Pound-₤", currency.getDouble("GBP"));
-                exchangeRate.put("Shekel-₪", currency.getDouble("ILS"));
-                exchangeRate.put("Yen-¥", currency.getDouble("JPY"));
+                urlConnection = (HttpURLConnection) new URL(urls[0]).openConnection();
+                InputStreamReader streamReader = new InputStreamReader(urlConnection.getInputStream());
+                int temp = streamReader.read();
+                while (temp != -1)
+                {
+                    data.append((char) temp);
+                    temp = streamReader.read();
+                }
+                return new JSONObject(data.toString());
             }
-            catch (JSONException e)
+            catch (Exception e)
             {
                 e.printStackTrace();
             }
-
-        };
-
-        Response.ErrorListener errorListener = Throwable::printStackTrace;
-
-        String url = "https://api.exchangerate.host/latest?base=USD&symbols=ILS,EUR,GBP,JPY";
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, response, errorListener);
-
-        requestQueue.add(jsonObjectRequest);
+            return null;
+        }
     }
 
 
@@ -101,8 +103,17 @@ public class MainActivity extends AppCompatActivity {
         this.spinnerFrom.setAdapter(currencyAdapter);
         this.spinnerTo.setAdapter(currencyAdapter);
 
-        this.requestQueue = Volley.newRequestQueue(this);
-        buildExchangeRate();
+        this.exchangeRate = new HashMap<>();
+        Downloader downloader = new Downloader();
+        try
+        {
+            buildExchangeRate(downloader.execute("https://api.exchangerate.host/latest?" +
+                    "base=USD&symbols=ILS,EUR,GBP,JPY").get());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         //building format to output
         this.df = new DecimalFormat("##.#####");
