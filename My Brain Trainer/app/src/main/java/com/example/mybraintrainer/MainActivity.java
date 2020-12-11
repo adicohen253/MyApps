@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     Random random = new Random();
     private int numberOfQuestions = 0;
     private int correctAnswers = 0;
-    private final int SecondsToPlay = 90; //time in seconds for the game
+    private final int SecondsToPlay = 60; //time in seconds for the game
 
     public void startGame()
     {
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
                     optionButton.setEnabled(false);
                     restartButton.setVisibility(View.VISIBLE);
                 }
+                answerTextView.setText("");
             }
         }.start();
         buildExercise();
@@ -104,10 +105,14 @@ public class MainActivity extends AppCompatActivity {
     public void restartGame(View view)
     {
         restartButton.setVisibility(View.INVISIBLE);
-        optionsGridLayout.setEnabled(true);
+        for (Button optionButton : optionButtons) {
+            optionButton.setEnabled(true);
+            restartButton.setVisibility(View.VISIBLE);
+        }
         scoreTextView.setText(R.string.starting_score);
         answerTextView.setText("");
         answerTextView.setVisibility(View.INVISIBLE);
+        view.setVisibility(View.INVISIBLE);
         numberOfQuestions = 0;
         correctAnswers = 0;
         startGame();
